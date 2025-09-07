@@ -6,6 +6,12 @@ public class Command {
     private static int taskCount = 0;
     private static Scanner user = new Scanner(System.in);
 
+    private static final int LEN_TODO = SparkException.LEN_TODO;
+    private static final int LEN_DEADLINE = SparkException.LEN_DEADLINE;
+    private static final int LEN_EVENT = SparkException.LEN_EVENT;
+    private static final int LEN_FROM = SparkException.LEN_FROM;
+    private static final int LEN_TO = SparkException.LEN_TO;
+
     public static boolean executeCommand(String input) {
         String command = input.split(" ")[0].toLowerCase();
 
@@ -32,7 +38,7 @@ public class Command {
                 handleEventCommand(input);
                 break;
             default:
-                handleUnknownCommand();
+                SparkException.handleUnknownCommand();
                 break;
         }
         return true;
@@ -48,6 +54,9 @@ public class Command {
     private static void handleListCommand() {
         printLine();
         System.out.println("This is your task list:");
+        if (taskCount == 0) {
+            System.out.println("You don't have any tasks yet. Try to create one~");
+        }
         for (int i = 0; i < taskCount; i++) {
             System.out.println("    " + (i + 1) + ". " + tasks[i]);
         }
@@ -55,85 +64,90 @@ public class Command {
     }
 
     private static void handleMarkCommand(String input, boolean isMark) {
-        try {
-            int index = getTaskIndex(input);
-            if (isValidIndex(index)) {
-                if (isMark) {
-                    tasks[index].markAsDone();
-                    printLine();
-                    System.out.println("    Nice! This task is finished:");
-                } else {
-                    tasks[index].unmark();
-                    printLine();
-                    System.out.println("    OK, don't forget to do it:");
-                }
-                System.out.println("    " + tasks[index]);
-                printLine();
-            } else {
-                System.out.println("Invalid task number.");
-            }
-        } catch (Exception e) {
-            System.out.println("Please use: " + (isMark ? "mark" : "unmark") + " <number>");
+        SparkException.setTaskCount(taskCount);
+
+        String error = SparkException.checkMarkUnmark(input);
+        if (error != null) {
+            System.out.println(error);
+            return;
         }
+
+        int index = getTaskIndex(input);
+        if (isMark) {
+            tasks[index].markAsDone();
+            printLine();
+            System.out.println("    Nice! This task is finished:");
+        } else {
+            tasks[index].unmark();
+            printLine();
+            System.out.println("    OK, don't forget to do it:");
+        }
+        System.out.println("    " + tasks[index]);
+        printLine();
     }
 
     private static void handleTodoCommand(String input) {
-        if (isTaskListFull()) {
-            System.out.println("Task list is full (max " + MAX_TASKS + " tasks).");
+        SparkException.setTaskCount(taskCount);
+
+        String error = SparkException.checkTaskListFull();
+        if (error != null) {
+            System.out.println(error);
             return;
         }
 
-        String description = input.substring(4).trim();
-        if (description.isEmpty()) {
-            System.out.println("Please provide a description for the todo.");
+        error = SparkException.checkTodo(input);
+        if (error != null) {
+            System.out.println(error);
             return;
         }
 
+        String description = input.substring(LEN_TODO).trim();
         addTask(new Todo(description));
     }
 
     private static void handleDeadlineCommand(String input) {
-        if (isTaskListFull()) {
-            System.out.println("Task list is full (max " + MAX_TASKS + " tasks).");
+        SparkException.setTaskCount(taskCount);
+
+        String error = SparkException.checkTaskListFull();
+        if (error != null) {
+            System.out.println(error);
             return;
         }
 
-        String rest = input.substring(8).trim();
-        String[] parts = rest.split("/by");
-        if (parts.length < 2) {
-            System.out.println("Please use the format: deadline <description> /by <time>");
+        error = SparkException.checkDeadline(input);
+        if (error != null) {
+            System.out.println(error);
             return;
         }
 
-        String description = parts[0].trim();
+        String[] parts = input.split("/by", 2);
+        String description = parts[0].substring(LEN_DEADLINE).trim();
         String by = parts[1].trim();
         addTask(new Deadline(description, by));
     }
 
     private static void handleEventCommand(String input) {
-        if (isTaskListFull()) {
-            System.out.println("Task list is full (max " + MAX_TASKS + " tasks).");
+        SparkException.setTaskCount(taskCount);
+
+        String error = SparkException.checkTaskListFull();
+        if (error != null) {
+            System.out.println(error);
             return;
         }
 
-        String rest = input.substring(5).trim();
-        String[] parts = rest.split("/from|/to");
-        if (parts.length < 3) {
-            System.out.println("Please use the format: event <description> /from <time> /to <time>");
+        error = SparkException.checkEvent(input);
+        if (error != null) {
+            System.out.println(error);
             return;
         }
 
-        String description = parts[0].trim();
-        String from = parts[1].trim();
-        String to = parts[2].trim();
+        int fromIndex = input.indexOf("/from");
+        int toIndex = input.indexOf("/to");
+
+        String description = input.substring(LEN_EVENT, fromIndex).trim();
+        String from = input.substring(fromIndex + LEN_FROM, toIndex).trim();
+        String to = input.substring(toIndex + LEN_TO).trim();
         addTask(new Event(description, from, to));
-    }
-
-    private static void handleUnknownCommand() {
-        System.out.println("Unknown command. Please use the command below:");
-        System.out.println("    1. todo/deadline/event <task>");
-        System.out.println("    2. mark/unmark <task number>");
-        System.out.println("    3. list/bye");
     }
 
     private static void addTask(Task task) {
@@ -144,19 +158,12 @@ public class Command {
         System.out.println("    Now you have " + (taskCount + 1) + " tasks in the list.");
         printLine();
         taskCount++;
+        SparkException.setTaskCount(taskCount);
     }
 
     private static int getTaskIndex(String input) {
         String[] parts = input.split(" ");
         return Integer.parseInt(parts[1]) - 1;
-    }
-
-    private static boolean isValidIndex(int index) {
-        return index >= 0 && index < taskCount;
-    }
-
-    private static boolean isTaskListFull() {
-        return taskCount >= MAX_TASKS;
     }
 
     public static void printLine() {
