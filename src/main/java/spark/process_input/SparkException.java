@@ -1,3 +1,5 @@
+package spark.process_input;
+
 public class SparkException {
     private static final int MAX_TASKS = 100;
     private static int taskCount = 0;

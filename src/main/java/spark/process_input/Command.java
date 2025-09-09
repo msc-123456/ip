@@ -1,3 +1,9 @@
+package spark.process_input;
+import spark.task.Deadline;
+import spark.task.Event;
+import spark.task.Task;
+import spark.task.Todo;
+
 import java.util.Scanner;
 
 public class Command {

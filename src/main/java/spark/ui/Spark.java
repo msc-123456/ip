@@ -1,3 +1,6 @@
+package spark.ui;
+import spark.process_input.Command;
+
 public class Spark {
     public static void main(String[] args) {
         showWelcomeMessage();
