@@ -1,8 +1,11 @@
 package spark.ui;
+
 import spark.process_input.Command;
+import spark.storage.Storage;
 
 public class Spark {
     public static void main(String[] args) {
+        Storage.loadTasks();
         showWelcomeMessage();
 
         boolean isRunning = true;

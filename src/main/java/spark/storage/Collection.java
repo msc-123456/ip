@@ -4,10 +4,11 @@ import spark.task.Task;
 import java.util.ArrayList;
 
 public class Collection {
-    private static ArrayList<Task> tasks = new ArrayList<>();
+    private static ArrayList<Task> tasks = Storage.loadTasks();
 
     public static void addTask(Task task) {
         tasks.add(task);
+        Storage.saveTasks(tasks);
     }
 
     public static Task getTask(int index) {
@@ -25,6 +26,7 @@ public class Collection {
         } else {
             task.unmark();
         }
+        Storage.saveTasks(tasks);
     }
 
     public static int getTaskCount() {
