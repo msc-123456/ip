@@ -1,20 +1,18 @@
 package spark.process_input;
+import spark.storage.Collection;
 
 public class SparkException {
-    private static final int MAX_TASKS = 100;
-    private static int taskCount = 0;
-
     public static final int LEN_TODO = "todo".length();
     public static final int LEN_DEADLINE = "deadline".length();
     public static final int LEN_EVENT = "event".length();
     public static final int LEN_FROM = "/from".length();
     public static final int LEN_TO = "/to".length();
 
-    public static void setTaskCount(int count) {
-        taskCount = count;
-    }
+
 
     public static String checkMarkUnmark(String input) {
+        int taskCount = Collection.getTaskCount();
+
         String[] parts = input.split(" ");
         if (parts.length < 2) {
             return "Please use: " + parts[0] + " <number>";
@@ -100,12 +98,6 @@ public class SparkException {
         return null;
     }
 
-    public static String checkTaskListFull() {
-        if (taskCount >= MAX_TASKS) {
-            return "Sorry! Task list is full (max " + MAX_TASKS + " tasks).";
-        }
-        return null;
-    }
 
     public static void handleUnknownCommand() {
         System.out.println("Sorry, I can't understand your command. ( 0.0 )");

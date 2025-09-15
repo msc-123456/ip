@@ -3,13 +3,11 @@ import spark.task.Deadline;
 import spark.task.Event;
 import spark.task.Task;
 import spark.task.Todo;
+import spark.storage.Collection;
 
 import java.util.Scanner;
 
 public class Command {
-    private static final int MAX_TASKS = 100;
-    private static Task[] tasks = new Task[MAX_TASKS];
-    private static int taskCount = 0;
     private static Scanner user = new Scanner(System.in);
 
     private static final int LEN_TODO = SparkException.LEN_TODO;
@@ -58,20 +56,19 @@ public class Command {
     }
 
     private static void handleListCommand() {
+        int taskCount = Collection.getTaskCount();
         printLine();
         System.out.println("This is your task list:");
         if (taskCount == 0) {
             System.out.println("You don't have any tasks yet. Try to create one~");
         }
         for (int i = 0; i < taskCount; i++) {
-            System.out.println("    " + (i + 1) + ". " + tasks[i]);
+            System.out.println("    " + (i + 1) + ". " + Collection.getTask(i));
         }
         printLine();
     }
 
     private static void handleMarkCommand(String input, boolean isMark) {
-        SparkException.setTaskCount(taskCount);
-
         String error = SparkException.checkMarkUnmark(input);
         if (error != null) {
             System.out.println(error);
@@ -79,29 +76,21 @@ public class Command {
         }
 
         int index = getTaskIndex(input);
+        Collection.markTask(index, isMark);
+        Task task = Collection.getTask(index);
+
+        printLine();
         if (isMark) {
-            tasks[index].markAsDone();
-            printLine();
             System.out.println("    Nice! This task is finished:");
         } else {
-            tasks[index].unmark();
-            printLine();
             System.out.println("    OK, don't forget to do it:");
         }
-        System.out.println("    " + tasks[index]);
+        System.out.println("    " + task);
         printLine();
     }
 
     private static void handleTodoCommand(String input) {
-        SparkException.setTaskCount(taskCount);
-
-        String error = SparkException.checkTaskListFull();
-        if (error != null) {
-            System.out.println(error);
-            return;
-        }
-
-        error = SparkException.checkTodo(input);
+        String error = SparkException.checkTodo(input);
         if (error != null) {
             System.out.println(error);
             return;
@@ -112,15 +101,7 @@ public class Command {
     }
 
     private static void handleDeadlineCommand(String input) {
-        SparkException.setTaskCount(taskCount);
-
-        String error = SparkException.checkTaskListFull();
-        if (error != null) {
-            System.out.println(error);
-            return;
-        }
-
-        error = SparkException.checkDeadline(input);
+        String error = SparkException.checkDeadline(input);
         if (error != null) {
             System.out.println(error);
             return;
@@ -133,15 +114,7 @@ public class Command {
     }
 
     private static void handleEventCommand(String input) {
-        SparkException.setTaskCount(taskCount);
-
-        String error = SparkException.checkTaskListFull();
-        if (error != null) {
-            System.out.println(error);
-            return;
-        }
-
-        error = SparkException.checkEvent(input);
+        String error = SparkException.checkEvent(input);
         if (error != null) {
             System.out.println(error);
             return;
@@ -157,14 +130,13 @@ public class Command {
     }
 
     private static void addTask(Task task) {
-        tasks[taskCount] = task;
+        Collection.addTask(task);
+        int taskCount = Collection.getTaskCount();
         printLine();
         System.out.println("    Got it! New task:");
         System.out.println("    " + task);
-        System.out.println("    Now you have " + (taskCount + 1) + " tasks in the list.");
+        System.out.println("    Now you have " + taskCount + " tasks in the list.");
         printLine();
-        taskCount++;
-        SparkException.setTaskCount(taskCount);
     }
 
     private static int getTaskIndex(String input) {
