@@ -41,6 +41,9 @@ public class Command {
             case "event":
                 handleEventCommand(input);
                 break;
+            case "delete":
+                handleDeleteCommand(input);
+                break;
             default:
                 SparkException.handleUnknownCommand();
                 break;
@@ -86,6 +89,24 @@ public class Command {
             System.out.println("    OK, don't forget to do it:");
         }
         System.out.println("    " + task);
+        printLine();
+    }
+
+    private static void handleDeleteCommand(String input) {
+        String error = SparkException.checkDelete(input);
+        if (error != null) {
+            System.out.println(error);
+            return;
+        }
+
+        int index = getTaskIndex(input);
+        Task task = Collection.removeTask(index);
+        int taskCount = Collection.getTaskCount();
+
+        printLine();
+        System.out.println("    OK. I've removed this task:");
+        System.out.println("    " + task);
+        System.out.println("    Now you have " + taskCount + " tasks in the list.");
         printLine();
     }
 

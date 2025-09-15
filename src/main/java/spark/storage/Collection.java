@@ -14,6 +14,10 @@ public class Collection {
         return tasks.get(index);
     }
 
+    public static Task removeTask(int index) {
+        return tasks.remove(index);
+    }
+
     public static void markTask(int index, boolean isDone) {
         Task task = tasks.get(index);
         if (isDone) {

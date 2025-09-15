@@ -32,6 +32,10 @@ public class SparkException {
         return null;
     }
 
+    public static String checkDelete(String input) {
+        return checkMarkUnmark(input); //Exactly the same logic
+    }
+
     public static String checkTodo(String input) {
         if (input.length() <= LEN_TODO) {
             return "Oh, I need a name for the todo task~";
