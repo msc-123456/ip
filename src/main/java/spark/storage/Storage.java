@@ -16,9 +16,17 @@ public class Storage {
     private static final String FILE_PATH = "./data/spark.txt";
     private static final String DIR_PATH = "./data";
 
+    private static final int TODO_ELEMENT_NUM = 3;
+    private static final int DEADLINE_ELEMENT_NUM = 4;
+    private static final int EVENT_ELEMENT_NUM = 5;
+
+    private static final String ERROR_TODO = "Skipping corrupted todo: ";
+    private static final String ERROR_DEADLINE = "Skipping corrupted deadline: ";
+    private static final String ERROR_EVENT = "Skipping corrupted event: ";
+    private static final String ERROR_UNKNOWN = "Skipping unknown message: ";
+
     public static void saveTasks(ArrayList<Task> tasks) {
         try {
-            // 创建目录（如果不存在）
             Files.createDirectories(Paths.get(DIR_PATH));
 
             FileWriter writer = new FileWriter(FILE_PATH);
@@ -54,8 +62,8 @@ public class Storage {
                 String line = scanner.nextLine();
                 String[] parts = line.split(" \\| ");
 
-                if (parts.length < 3) {
-                    System.out.println("Skipping corrupted line: " + line);
+                if (parts.length < TODO_ELEMENT_NUM) {
+                    System.out.println(ERROR_UNKNOWN + line);
                     continue;
                 }
 
@@ -66,24 +74,28 @@ public class Storage {
                 Task task = null;
                 switch (type) {
                     case "T":
+                        if (parts.length != TODO_ELEMENT_NUM) {
+                            System.out.println(ERROR_TODO + line);
+                            continue;
+                        }
                         task = new Todo(description);
                         break;
                     case "D":
-                        if (parts.length < 4) {
-                            System.out.println("Skipping corrupted deadline: " + line);
+                        if (parts.length != DEADLINE_ELEMENT_NUM) {
+                            System.out.println(ERROR_DEADLINE + line);
                             continue;
                         }
                         task = new Deadline(description, parts[3].trim());
                         break;
                     case "E":
-                        if (parts.length < 5) {
-                            System.out.println("Skipping corrupted event: " + line);
+                        if (parts.length != EVENT_ELEMENT_NUM) {
+                            System.out.println(ERROR_EVENT + line);
                             continue;
                         }
                         task = new Event(description, parts[3].trim(), parts[4].trim());
                         break;
                     default:
-                        System.out.println("Skipping unknown task type: " + line);
+                        System.out.println(ERROR_UNKNOWN + line);
                         continue;
                 }
 
