@@ -16,7 +16,9 @@ public class Collection {
     }
 
     public static Task removeTask(int index) {
-        return tasks.remove(index);
+        Task removedTask = tasks.remove(index);
+        Storage.saveTasks(tasks);
+        return removedTask;
     }
 
     public static void markTask(int index, boolean isDone) {
