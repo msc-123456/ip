@@ -1,5 +1,2 @@
-T | 0 | make homework
-E | 0 | lecture | 4 | 6
-T | 0 | sleep
-D | 0 | tP | Friday
-E | 0 | meeting | 2 | 3
+E | 0 | Meng Sichong attend CS2113 lecture Friday 19 Sep 2025 | 4 | 6pm
+D | 0 | Meng Sichong submit UG draft | today 2359
