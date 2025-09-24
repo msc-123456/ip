@@ -1,5 +1,7 @@
 package spark.process_input;
+
 import spark.storage.Collection;
+import spark.storage.Time;
 
 public class SparkException {
     public static final int LEN_TODO = "todo".length();
@@ -7,8 +9,6 @@ public class SparkException {
     public static final int LEN_EVENT = "event".length();
     public static final int LEN_FROM = "/from".length();
     public static final int LEN_TO = "/to".length();
-
-
 
     public static String checkMarkUnmark(String input) {
         int taskCount = Collection.getTaskCount();
@@ -66,6 +66,11 @@ public class SparkException {
             return "Oh, I need a name for the deadline task~";
         }
 
+        String timeError = checkTimeFormat(parts[1].trim());
+        if (timeError != null) {
+            return timeError;
+        }
+
         return null;
     }
 
@@ -99,6 +104,36 @@ public class SparkException {
             return "Oh, I need a name for the event task~\nPlease use: event <task name> /from <time> /to <time>";
         }
 
+        String fromTimeError = checkTimeFormat(betweenFromAndTo);
+        if (fromTimeError != null) {
+            return fromTimeError;
+        }
+
+        String toTimeError = checkTimeFormat(afterTo);
+        if (toTimeError != null) {
+            return toTimeError;
+        }
+
+        Time startTime = new Time(betweenFromAndTo);
+        Time endTime = new Time(afterTo);
+
+        if (startTime.hasTime() != endTime.hasTime()) {
+            return "Please use the same format for the start time and end time";
+        }
+
+        int comparisonResult = Command.compareTimes(startTime, endTime);
+        if (comparisonResult >= 0) {
+            return "Sorry, the start time should be earlier than the end time";
+        }
+
+        return null;
+    }
+
+    public static String checkTimeFormat(String timeString) {
+        Time time = new Time(timeString);
+        if (!time.isValid()) {
+            return time.getErrorMessage();
+        }
         return null;
     }
 
@@ -106,6 +141,6 @@ public class SparkException {
     public static void handleUnknownCommand() {
         System.out.println("Sorry, I can't understand your command. ( 0.0 )");
         System.out.println("Please use these command ( ^_^ ):");
-        System.out.println("todo, deadline, event, mark, unmark, list, bye");
+        System.out.println("todo, deadline, event, mark, unmark, list, bye, delete, finddate, schedule");
     }
 }
