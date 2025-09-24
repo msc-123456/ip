@@ -56,6 +56,9 @@ public class Command {
             case "finddate":
                 handleFindDateCommand(input);
                 break;
+            case "find":
+                handleFindCommand(input);
+                break;
             default:
                 SparkException.handleUnknownCommand();
                 break;
@@ -296,12 +299,6 @@ public class Command {
             printTo(todos);
         }
 
-        System.out.println("Summary:");
-        System.out.println("  Events: " + events.size());
-        System.out.println("  Deadlines: " + deadlines.size());
-        System.out.println("  Todos: " + todos.size());
-        System.out.println("  Total: " + (events.size() + deadlines.size() + todos.size()));
-
         printLine();
     }
 
@@ -344,6 +341,41 @@ public class Command {
         } else {
             return false;
         }
+    }
+
+    private static void handleFindCommand(String input) {
+        String[] parts = input.split(" ", 2);
+        if (parts.length < 2) {
+            System.out.println("Please use: find <keyword>");
+            return;
+        }
+
+        String keyword = parts[1].trim().toLowerCase();
+        if (keyword.isEmpty()) {
+            System.out.println("Please provide a keyword to search for.");
+            return;
+        }
+
+        ArrayList<Task> matchingTasks = new ArrayList<>();
+        int taskCount = Collection.getTaskCount();
+
+        for (int i = 0; i < taskCount; i++) {
+            Task task = Collection.getTask(i);
+            if (task.getDescription().toLowerCase().contains(keyword)) {
+                matchingTasks.add(task);
+            }
+        }
+
+        printLine();
+        System.out.println("Here are the matching tasks in your list:");
+        if (matchingTasks.isEmpty()) {
+            System.out.println("No tasks found containing: " + keyword);
+        } else {
+            for (int i = 0; i < matchingTasks.size(); i++) {
+                System.out.println("    " + (i + 1) + "." + matchingTasks.get(i));
+            }
+        }
+        printLine();
     }
 
     private static int getTaskIndex(String input) {

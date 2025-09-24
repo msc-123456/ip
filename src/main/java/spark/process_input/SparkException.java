@@ -141,6 +141,6 @@ public class SparkException {
     public static void handleUnknownCommand() {
         System.out.println("Sorry, I can't understand your command. ( 0.0 )");
         System.out.println("Please use these command ( ^_^ ):");
-        System.out.println("todo, deadline, event, mark, unmark, list, bye, delete, finddate, schedule");
+        System.out.println("todo, deadline, event, mark, unmark, list, bye, delete, finddate, schedule, find");
     }
 }
