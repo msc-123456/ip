@@ -1,14 +1,16 @@
 package spark.task;
 
+import spark.storage.Time;
+
 public class Deadline extends Task {
-    protected String by;
+    protected Time by;
 
     public Deadline(String description, String by) {
         super(description);
-        this.by = by;
+        this.by = new Time(by);
     }
 
-    public String getBy() {
+    public Time getBy() {
         return by;
     }
 

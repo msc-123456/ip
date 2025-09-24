@@ -1,20 +1,22 @@
 package spark.task;
 
+import spark.storage.Time;
+
 public class Event extends Task {
-    protected String from;
-    protected String to;
+    protected Time from;
+    protected Time to;
 
     public Event(String description, String from, String to) {
         super(description);
-        this.from = from;
-        this.to = to;
+        this.from = new Time(from);
+        this.to = new Time(to);
     }
 
-    public String getFrom() {
+    public Time getFrom() {
         return from;
     }
 
-    public String getTo() {
+    public Time getTo() {
         return to;
     }
 

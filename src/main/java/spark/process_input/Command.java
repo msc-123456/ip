@@ -1,9 +1,15 @@
 package spark.process_input;
+
 import spark.task.Deadline;
 import spark.task.Event;
 import spark.task.Task;
 import spark.task.Todo;
 import spark.storage.Collection;
+import spark.storage.Time;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Locale;
 
 import java.util.Scanner;
 
@@ -43,6 +49,12 @@ public class Command {
                 break;
             case "delete":
                 handleDeleteCommand(input);
+                break;
+            case "schedule":
+                handleScheduleCommand();
+                break;
+            case "finddate":
+                handleFindDateCommand(input);
                 break;
             default:
                 SparkException.handleUnknownCommand();
@@ -158,6 +170,180 @@ public class Command {
         System.out.println("    " + task);
         System.out.println("    Now you have " + taskCount + " tasks in the list.");
         printLine();
+    }
+
+    private static void handleFindDateCommand(String input) {
+        String[] parts = input.split(" ", 2);
+        if (parts.length < 2) {
+            System.out.println("Please use: finddate <date>");
+            return;
+        }
+
+        String dateString = parts[1].trim();
+        LocalDate targetDate;
+
+        DateTimeFormatter dateFormatters = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+        try {
+            targetDate = LocalDate.parse(dateString, dateFormatters);
+        } catch (Exception e) {
+            System.out.println("Invalid date format. Please use: yyyy-MM-dd");
+            return;
+        }
+
+        ArrayList<Task> matchingTasks = new ArrayList<>();
+        int taskCount = Collection.getTaskCount();
+
+        for (int i = 0; i < taskCount; i++) {
+            Task task = Collection.getTask(i);
+            if (isTaskOnDate(task, targetDate)) {
+                matchingTasks.add(task);
+            }
+        }
+
+        printLine();
+        System.out.println("Tasks on " + targetDate.format(DateTimeFormatter.ofPattern("MMM dd yyyy",  Locale.ENGLISH)) + ":");
+        if (matchingTasks.isEmpty()) {
+            System.out.println("No tasks found for this date.");
+        } else {
+            for (int i = 0; i < matchingTasks.size(); i++) {
+                System.out.println("    " + (i + 1) + ". " + matchingTasks.get(i));
+            }
+        }
+        printLine();
+    }
+
+    private static void handleScheduleCommand() {
+        ArrayList<Task> allTasks = getAllTasks();
+
+        if (allTasks.isEmpty()) {
+            printLine();
+            System.out.println("No tasks found.");
+            printLine();
+            return;
+        }
+
+        ArrayList<Event> events = new ArrayList<>();
+        ArrayList<Deadline> deadlines = new ArrayList<>();
+        ArrayList<Todo> todos = new ArrayList<>();
+
+        for (Task task : allTasks) {
+            if (task instanceof Event) {
+                events.add((Event) task);
+            } else if (task instanceof Deadline) {
+                deadlines.add((Deadline) task);
+            } else if (task instanceof Todo) {
+                todos.add((Todo) task);
+            }
+        }
+
+        events.sort((e1, e2) -> compareTimes(e1.getFrom(), e2.getFrom()));
+        deadlines.sort((d1, d2) -> compareTimes(d1.getBy(), d2.getBy()));
+
+        printSchedule(events, deadlines, todos);
+    }
+
+    public static int compareTimes(Time time1, Time time2) {
+        if (time1 == null || !time1.isValid()) return 1;
+        if (time2 == null || !time2.isValid()) return -1;
+
+        LocalDate date1 = time1.getDate();
+        LocalDate date2 = time2.getDate();
+
+        int dateComparison = date1.compareTo(date2);
+        if (dateComparison != 0) {
+            return dateComparison;
+        }
+
+        if (!time1.hasTime() && time2.hasTime()) {
+            return -1;
+        }
+        if (time1.hasTime() && !time2.hasTime()) {
+            return 1;
+        }
+        if (!time1.hasTime() && !time2.hasTime()) {
+            return 0;
+        }
+
+        return time1.getDateTime().compareTo(time2.getDateTime());
+    }
+
+    private static ArrayList<Task> getAllTasks() {
+        ArrayList<Task> allTasks = new ArrayList<>();
+        int taskCount = Collection.getTaskCount();
+
+        for (int i = 0; i < taskCount; i++) {
+            allTasks.add(Collection.getTask(i));
+        }
+
+        return allTasks;
+    }
+
+    private static void printSchedule(ArrayList<Event> events, ArrayList<Deadline> deadlines, ArrayList<Todo> todos) {
+        printLine();
+        System.out.println("Tasks sorted by time:");
+        System.out.println();
+
+        if (!events.isEmpty()) {
+            printEvents(events);
+        }
+
+        if (!deadlines.isEmpty()) {
+            printDeadlines(deadlines);
+        }
+
+        if (!todos.isEmpty()) {
+            printTo(todos);
+        }
+
+        System.out.println("Summary:");
+        System.out.println("  Events: " + events.size());
+        System.out.println("  Deadlines: " + deadlines.size());
+        System.out.println("  Todos: " + todos.size());
+        System.out.println("  Total: " + (events.size() + deadlines.size() + todos.size()));
+
+        printLine();
+    }
+
+    private static void printEvents(ArrayList<Event> events) {
+        int counter = 1;
+        System.out.println("=== EVENTS (sorted by start time) ===");
+        for (Event event : events) {
+            System.out.println("    " + counter + ". " + event);
+            counter++;
+        }
+        System.out.println();
+    }
+
+    private static void printDeadlines(ArrayList<Deadline> deadlines) {
+        int counter = 1;
+        System.out.println("=== DEADLINES (sorted by due time) ===");
+        for (Deadline deadline : deadlines) {
+            System.out.println("    " + counter + ". " + deadline);
+            counter++;
+        }
+        System.out.println();
+    }
+
+    private static void printTo(ArrayList<Todo> todos) {
+        int counter = 1;
+        System.out.println("=== TODOS (no time information) ===");
+        for (Todo todo : todos) {
+            System.out.println("    " + counter + ". " + todo);
+            counter++;
+        }
+    }
+
+    private static boolean isTaskOnDate(Task task, LocalDate date) {
+        if (task instanceof Event) {
+            Event event = (Event) task;
+            return !event.getFrom().getDate().isAfter(date) && !event.getTo().getDate().isBefore(date);
+        } else if (task instanceof Deadline) {
+            Deadline deadline = (Deadline) task;
+            return deadline.getBy().isSameDate(date);
+        } else {
+            return false;
+        }
     }
 
     private static int getTaskIndex(String input) {

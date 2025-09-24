@@ -1,3 +1,6 @@
-E | 0 | Meng Sichong attend CS2113 lecture Friday 19 Sep 2025 | 4 | 6pm
-E | 0 | Lab | 4pm | 6pm
-T | 0 | have lunch
+D | 0 | test | 2025-01-01
+D | 0 | a | 2025-01-01 1200
+E | 0 | exchange | 2025-08-03 | 2025-12-03
+D | 0 | b | 2000-03-03 1600
+E | 0 | MC | 2025-09-24 1400 | 2025-09-24 1600
+T | 0 | task
