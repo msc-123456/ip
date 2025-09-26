@@ -12,6 +12,9 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Scanner;
 
+/**
+ * Stores the tasks in a file and loads tasks from the file.
+ */
 public class Storage {
     private static final String FILE_PATH = "./data/spark.txt";
     private static final String DIR_PATH = "./data";
@@ -28,6 +31,11 @@ public class Storage {
     private static final String ERROR_UNKNOWN = "Skipping unknown message: ";
     private static final String INVALID_TASK = "Your task file has been updated and incorrect task information has been deleted";
 
+    /**
+     * Save tasks to the file.
+     *
+     * @param tasks The list of tasks to save.
+     */
     public static void saveTasks(ArrayList<Task> tasks) {
         try {
             Files.createDirectories(Paths.get(DIR_PATH));
@@ -68,6 +76,11 @@ public class Storage {
         return "E | " + (e.getStatusIcon().equals("X") ? "1" : "0") + " | " + e.getDescription() + " | " + fromStr + " | " + toStr;
     }
 
+    /**
+     * Loads tasks from the storage file.
+     *
+     * @return An ArrayList containing all loaded tasks.
+     */
     public static ArrayList<Task> loadTasks() {
         ArrayList<Task> tasks = new ArrayList<>();
         try {
