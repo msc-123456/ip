@@ -3,6 +3,9 @@ package spark.process_input;
 import spark.storage.Collection;
 import spark.storage.Time;
 
+/**
+ * Provides validation and error handling for user commands.
+ */
 public class SparkException {
     public static final int LEN_TODO = "todo".length();
     public static final int LEN_DEADLINE = "deadline".length();
@@ -31,6 +34,12 @@ public class SparkException {
             "todo, deadline, event, mark, unmark, list, bye, delete, finddate, schedule, find";
 
 
+    /**
+     * Validates mark and unmark command syntax.
+     *
+     * @param input The user input.
+     * @return Error message if validation fails, null if valid.
+     */
     public static String checkMarkUnmark(String input) {
         int taskCount = Collection.getTaskCount();
 
@@ -53,10 +62,22 @@ public class SparkException {
         return null;
     }
 
+    /**
+     * Validates delete command syntax.
+     *
+     * @param input The user input.
+     * @return Error message if validation fails, null if valid.
+     */
     public static String checkDelete(String input) {
         return checkMarkUnmark(input); //Exactly the same logic
     }
 
+    /**
+     * Validates todo command syntax and parameters.
+     *
+     * @param input The user input.
+     * @return Error message if validation fails, null if valid.
+     */
     public static String checkTodo(String input) {
         if (input.length() <= LEN_TODO) {
             return TODO_FORMAT;
@@ -68,6 +89,12 @@ public class SparkException {
         return null;
     }
 
+    /**
+     * Validates deadline command syntax and parameters.
+     *
+     * @param input The user input.
+     * @return Error message if validation fails, null if valid.
+     */
     public static String checkDeadline(String input) {
         if (!input.contains("/by")) {
             return DEADLINE_FORMAT;
@@ -95,6 +122,12 @@ public class SparkException {
         return null;
     }
 
+    /**
+     * Validates event command syntax and parameters.
+     *
+     * @param input The user input.
+     * @return Error message if validation fails, null if valid.
+     */
     public static String checkEvent(String input) {
         String formatError = checkEventFormat(input);
         if (formatError != null) {
@@ -179,6 +212,12 @@ public class SparkException {
         return null;
     }
 
+    /**
+     * Validates time format string.
+     *
+     * @param timeString The time string to validate.
+     * @return Error message if validation fails, null if valid.
+     */
     public static String checkTimeFormat(String timeString) {
         Time time = new Time(timeString);
         if (!time.isValid()) {
@@ -187,6 +226,9 @@ public class SparkException {
         return null;
     }
 
+    /**
+     * Handles unknown commands by displaying an expected input message.
+     */
     public static void handleUnknownCommand() {
         System.out.println(UNKNOWN_COMMAND);
     }

@@ -6,6 +6,10 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Locale;
 
+/**
+ * Represents a time value with date and optional time components,
+ * handles parsing validation, and formatting of the time strings.
+ */
 public class Time {
     private LocalDateTime dateTime;
     private LocalDate dateOnly;
@@ -29,10 +33,20 @@ public class Time {
     private static final DateTimeFormatter DATETIME_DISPLAY =
             DateTimeFormatter.ofPattern("MMM dd yyyy HH:mm", Locale.ENGLISH);
 
+    /**
+     * Constructs a Time object by parsing the given time string.
+     *
+     * @param timeString The time string to parse.
+     */
     public Time(String timeString) {
         parseTimeString(timeString);
     }
 
+    /**
+     * Parses the time string and initializes the time object.
+     *
+     * @param timeString The time string to parse.
+     */
     private void parseTimeString(String timeString) {
         timeString = timeString.trim();
         this.isValid = false;
@@ -57,30 +71,66 @@ public class Time {
         }
     }
 
+    /**
+     * Checks if the time value is valid.
+     *
+     * @return True if the time is valid, false otherwise.
+     */
     public boolean isValid() {
         return isValid;
     }
 
+    /**
+     * Gets the error message if the time is invalid.
+     *
+     * @return The error message and the correct format.
+     */
     public String getErrorMessage() {
         return errorMessage + "\n" + EXPECTED_FORMAT;
     }
 
+    /**
+     * Get the LocalDateTime object.
+     *
+     * @return The LocalDateTime object.
+     */
     public LocalDateTime getDateTime() {
         return dateTime;
     }
 
+    /**
+     * Get the LocalDate object.
+     *
+     * @return The LocalDate object representing the date.
+     */
     public LocalDate getDate() {
         return hasTime ? dateTime.toLocalDate() : dateOnly;
     }
 
+    /**
+     * Checks if this time object has a time component.
+     *
+     * @return True if time component is present, false if only date.
+     */
     public boolean hasTime() {
         return hasTime;
     }
 
+    /**
+     * Checks if this time object represents the same date as another date.
+     *
+     * @param otherDate The date to compare with.
+     * @return True if the dates are the same, false otherwise.
+     */
     public boolean isSameDate(LocalDate otherDate) {
         return getDate().equals(otherDate);
     }
 
+    /**
+     * Returns a string representation of the time.
+     *
+     * @return The string representation of the time.
+     */
     @Override
     public String toString() {
         if (hasTime) {
@@ -90,6 +140,11 @@ public class Time {
         }
     }
 
+    /**
+     * Returns the storage format string representation of the time.
+     *
+     * @return The time string in storage format.
+     */
     public String toStorageString() {
         if (hasTime) {
             return dateTime.format(DATETIME_FORMATTER);

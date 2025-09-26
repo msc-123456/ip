@@ -12,6 +12,11 @@ import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Scanner;
 
+/**
+ * Handles user commands, including creating tasks,
+ * deleting tasks, marking tasks, listing tasks, searching tasks by keyword,
+ * searching tasks by time, listing tasks by time and exiting.
+ */
 public class Command {
     private static Scanner user = new Scanner(System.in);
 
@@ -39,6 +44,12 @@ public class Command {
     private static final String FIND_FORMAT = "Please use: find <keyword>";
     private static final String TASKS_FOR_KEYWORD = "Here are the tasks containing the keyword ";
 
+    /**
+     * Execute user commands.
+     *
+     * @param input The user input command
+     * @return True if it should continue running, false if it should exit
+     */
     public static boolean executeCommand(String input) {
         String command = input.split(" ")[0].toLowerCase();
 
@@ -264,6 +275,14 @@ public class Command {
         printSchedule(events, deadlines, todos);
     }
 
+    /**
+     * Compare two Time objects for ordering purposes.
+     *
+     * @param time1 The first time to compare
+     * @param time2 The second time to compare
+     * @return A negative integer if time1 is before time2, zero if equal,
+     * positive if time1 is after time2.
+     */
     public static int compareTimes(Time time1, Time time2) {
         if (time1 == null || !time1.isValid()) return 1;
         if (time2 == null || !time2.isValid()) return -1;
@@ -393,10 +412,18 @@ public class Command {
         return Integer.parseInt(parts[1]) - 1;
     }
 
+    /**
+     * Prints a separator line.
+     */
     public static void printLine() {
         System.out.println("___________________________________");
     }
 
+    /**
+     * Reads user input.
+     *
+     * @return Trimmed user input string.
+     */
     public static String getInput() {
         return user.nextLine().trim();
     }

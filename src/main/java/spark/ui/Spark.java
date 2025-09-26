@@ -3,7 +3,16 @@ package spark.ui;
 import spark.process_input.Command;
 import spark.storage.Storage;
 
+/**
+ * Main entry for the Spark task management.
+ * This class initializes the application and handle the main execution loop.
+ */
 public class Spark {
+    /**
+     * Main method that starts the Spark application
+     *
+     * @param args Command line argument
+     */
     public static void main(String[] args) {
         Storage.loadTasks();
         showWelcomeMessage();
