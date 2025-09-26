@@ -10,7 +10,6 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Locale;
-
 import java.util.Scanner;
 
 public class Command {
@@ -21,6 +20,24 @@ public class Command {
     private static final int LEN_EVENT = SparkException.LEN_EVENT;
     private static final int LEN_FROM = SparkException.LEN_FROM;
     private static final int LEN_TO = SparkException.LEN_TO;
+
+    private static final String TASK_LIST = "This is your task list:";
+    private static final String EMPTY_TASK_LIST = "You don't have any tasks yet. Try to create one~";
+
+    private static final String MARKED_TASK = "    Nice! This task is finished:";
+    private static final String UNMARKED_TASK = "    OK, don't forget to do it:";
+    private static final String DELETED_TASK = "    OK. I've removed this task:";
+
+    private static final String FIND_DATE_FORMAT = "Please use: finddate <date>";
+    private static final String INVALID_DATE = "Invalid date format. Please use: yyyy-MM-dd";
+    private static final String NO_MATCHING_TASKS = "No tasks found for this ";
+
+    private static final String SORTED_EVENTS = "=== EVENTS (sorted by start time) ===";
+    private static final String SORTED_DEADLINES = "=== DEADLINE (sorted by due time) ===";
+    private static final String SORTED_TODOS = "=== TODOS (no time information) ===";
+
+    private static final String FIND_FORMAT = "Please use: find <keyword>";
+    private static final String TASKS_FOR_KEYWORD = "Here are the tasks containing the keyword ";
 
     public static boolean executeCommand(String input) {
         String command = input.split(" ")[0].toLowerCase();
@@ -76,9 +93,9 @@ public class Command {
     private static void handleListCommand() {
         int taskCount = Collection.getTaskCount();
         printLine();
-        System.out.println("This is your task list:");
+        System.out.println(TASK_LIST);
         if (taskCount == 0) {
-            System.out.println("You don't have any tasks yet. Try to create one~");
+            System.out.println(EMPTY_TASK_LIST);
         }
         for (int i = 0; i < taskCount; i++) {
             System.out.println("    " + (i + 1) + ". " + Collection.getTask(i));
@@ -99,9 +116,9 @@ public class Command {
 
         printLine();
         if (isMark) {
-            System.out.println("    Nice! This task is finished:");
+            System.out.println(MARKED_TASK);
         } else {
-            System.out.println("    OK, don't forget to do it:");
+            System.out.println(UNMARKED_TASK);
         }
         System.out.println("    " + task);
         printLine();
@@ -119,7 +136,7 @@ public class Command {
         int taskCount = Collection.getTaskCount();
 
         printLine();
-        System.out.println("    OK. I've removed this task:");
+        System.out.println(DELETED_TASK);
         System.out.println("    " + task);
         System.out.println("    Now you have " + taskCount + " tasks in the list.");
         printLine();
@@ -178,25 +195,23 @@ public class Command {
     private static void handleFindDateCommand(String input) {
         String[] parts = input.split(" ", 2);
         if (parts.length < 2) {
-            System.out.println("Please use: finddate <date>");
+            System.out.println(FIND_DATE_FORMAT);
             return;
         }
 
         String dateString = parts[1].trim();
         LocalDate targetDate;
-
         DateTimeFormatter dateFormatters = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
         try {
             targetDate = LocalDate.parse(dateString, dateFormatters);
         } catch (Exception e) {
-            System.out.println("Invalid date format. Please use: yyyy-MM-dd");
+            System.out.println(INVALID_DATE);
             return;
         }
 
         ArrayList<Task> matchingTasks = new ArrayList<>();
         int taskCount = Collection.getTaskCount();
-
         for (int i = 0; i < taskCount; i++) {
             Task task = Collection.getTask(i);
             if (isTaskOnDate(task, targetDate)) {
@@ -206,8 +221,12 @@ public class Command {
 
         printLine();
         System.out.println("Tasks on " + targetDate.format(DateTimeFormatter.ofPattern("MMM dd yyyy",  Locale.ENGLISH)) + ":");
+        printMatchingTasks(matchingTasks, "date");
+    }
+
+    private static void printMatchingTasks(ArrayList<Task> matchingTasks, String matchingType) {
         if (matchingTasks.isEmpty()) {
-            System.out.println("No tasks found for this date.");
+            System.out.println(NO_MATCHING_TASKS + matchingType);
         } else {
             for (int i = 0; i < matchingTasks.size(); i++) {
                 System.out.println("    " + (i + 1) + ". " + matchingTasks.get(i));
@@ -242,7 +261,6 @@ public class Command {
 
         events.sort((e1, e2) -> compareTimes(e1.getFrom(), e2.getFrom()));
         deadlines.sort((d1, d2) -> compareTimes(d1.getBy(), d2.getBy()));
-
         printSchedule(events, deadlines, todos);
     }
 
@@ -285,7 +303,6 @@ public class Command {
     private static void printSchedule(ArrayList<Event> events, ArrayList<Deadline> deadlines, ArrayList<Todo> todos) {
         printLine();
         System.out.println("Tasks sorted by time:");
-        System.out.println();
 
         if (!events.isEmpty()) {
             printEvents(events);
@@ -304,7 +321,7 @@ public class Command {
 
     private static void printEvents(ArrayList<Event> events) {
         int counter = 1;
-        System.out.println("=== EVENTS (sorted by start time) ===");
+        System.out.println(SORTED_EVENTS);
         for (Event event : events) {
             System.out.println("    " + counter + ". " + event);
             counter++;
@@ -314,7 +331,7 @@ public class Command {
 
     private static void printDeadlines(ArrayList<Deadline> deadlines) {
         int counter = 1;
-        System.out.println("=== DEADLINES (sorted by due time) ===");
+        System.out.println(SORTED_DEADLINES);
         for (Deadline deadline : deadlines) {
             System.out.println("    " + counter + ". " + deadline);
             counter++;
@@ -324,7 +341,7 @@ public class Command {
 
     private static void printTo(ArrayList<Todo> todos) {
         int counter = 1;
-        System.out.println("=== TODOS (no time information) ===");
+        System.out.println(SORTED_TODOS);
         for (Todo todo : todos) {
             System.out.println("    " + counter + ". " + todo);
             counter++;
@@ -346,13 +363,13 @@ public class Command {
     private static void handleFindCommand(String input) {
         String[] parts = input.split(" ", 2);
         if (parts.length < 2) {
-            System.out.println("Please use: find <keyword>");
+            System.out.println(FIND_FORMAT);
             return;
         }
 
         String keyword = parts[1].trim().toLowerCase();
         if (keyword.isEmpty()) {
-            System.out.println("Please provide a keyword to search for.");
+            System.out.println(FIND_FORMAT);
             return;
         }
 
@@ -367,15 +384,8 @@ public class Command {
         }
 
         printLine();
-        System.out.println("Here are the matching tasks in your list:");
-        if (matchingTasks.isEmpty()) {
-            System.out.println("No tasks found containing: " + keyword);
-        } else {
-            for (int i = 0; i < matchingTasks.size(); i++) {
-                System.out.println("    " + (i + 1) + "." + matchingTasks.get(i));
-            }
-        }
-        printLine();
+        System.out.println(TASKS_FOR_KEYWORD + keyword + " :");
+        printMatchingTasks(matchingTasks, "keyword");
     }
 
     private static int getTaskIndex(String input) {

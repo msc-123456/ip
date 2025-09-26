@@ -22,10 +22,6 @@ public class Storage {
     private static final int DEADLINE_ELEMENT_NUM = 4;
     private static final int EVENT_ELEMENT_NUM = 5;
 
-    private static final String BY = "By: ";
-    private static final String FROM = "From: ";
-    private static final String TO = "To: ";
-
     private static final String ERROR_TODO = "Skipping corrupted todo: ";
     private static final String ERROR_DEADLINE = "Skipping corrupted deadline: ";
     private static final String ERROR_EVENT = "Skipping corrupted event: ";
@@ -41,24 +37,11 @@ public class Storage {
             for (Task task : tasks) {
                 String line = "";
                 if (task instanceof Todo) {
-                    line = "T | " + (task.getStatusIcon().equals("X") ? "1" : "0") + " | " + task.getDescription();
+                    line = saveTodo(task);
                 } else if (task instanceof Deadline) {
-                    Deadline d = (Deadline) task;
-                    if (!d.getBy().isValid()) {
-                        System.out.println("Warning: Skipping deadline with invalid time: " + d.getDescription());
-                        continue;
-                    }
-                    String timeStr = d.getBy().toStorageString();
-                    line = "D | " + (d.getStatusIcon().equals("X") ? "1" : "0") + " | " + d.getDescription() + " | " + timeStr;
+                    line = saveDeadline(task);
                 } else if (task instanceof Event) {
-                    Event e = (Event) task;
-                    if (!e.getFrom().isValid() || !e.getTo().isValid()) {
-                        System.out.println("Warning: Skipping event with invalid time: " + e.getDescription());
-                        continue;
-                    }
-                    String fromStr = e.getFrom().toStorageString();
-                    String toStr = e.getTo().toStorageString();
-                    line = "E | " + (e.getStatusIcon().equals("X") ? "1" : "0") + " | " + e.getDescription() + " | " + fromStr + " | " + toStr;
+                    line = saveEvent(task);
                 }
                 writer.write(line + System.lineSeparator());
             }
@@ -66,6 +49,23 @@ public class Storage {
         } catch (IOException e) {
             System.out.println("Error saving tasks: " + e.getMessage());
         }
+    }
+
+    private static String saveTodo(Task task) {
+        return "T | " + (task.getStatusIcon().equals("X") ? "1" : "0") + " | " + task.getDescription();
+    }
+
+    private static String saveDeadline(Task task) {
+        Deadline d = (Deadline) task;
+        String timeStr = d.getBy().toStorageString();
+        return "D | " + (d.getStatusIcon().equals("X") ? "1" : "0") + " | " + d.getDescription() + " | " + timeStr;
+    }
+
+    private static String saveEvent(Task task) {
+        Event e = (Event) task;
+        String fromStr = e.getFrom().toStorageString();
+        String toStr = e.getTo().toStorageString();
+        return "E | " + (e.getStatusIcon().equals("X") ? "1" : "0") + " | " + e.getDescription() + " | " + fromStr + " | " + toStr;
     }
 
     public static ArrayList<Task> loadTasks() {
@@ -77,86 +77,98 @@ public class Storage {
             }
 
             Scanner scanner = new Scanner(file);
-
             int lineNumber = 0;
-
             while (scanner.hasNextLine()) {
                 lineNumber++;
                 String line = scanner.nextLine();
-                String[] parts = line.split(" \\| ");
-
-                if (parts.length < TODO_ELEMENT_NUM) {
-                    hasInvaildTask = true;
-                    System.out.println("Error line: " + lineNumber);
-                    System.out.println(ERROR_UNKNOWN + line);
-                    continue;
+                Task task = parseTaskFromLine(line, lineNumber);
+                if (task != null) {
+                    tasks.add(task);
                 }
-
-                String type = parts[0].trim();
-                boolean isDone = parts[1].trim().equals("1");
-                String description = parts[2].trim();
-
-                Task task = null;
-                switch (type) {
-                    case "T":
-                        if (parts.length != TODO_ELEMENT_NUM) {
-                            hasInvaildTask = true;
-                            System.out.println("Error line: " + lineNumber);
-                            System.out.println(ERROR_TODO + line);
-                            continue;
-                        }
-                        task = new Todo(description);
-                        break;
-                    case "D":
-                        if (parts.length != DEADLINE_ELEMENT_NUM) {
-                            hasInvaildTask = true;
-                            System.out.println("Error line: " + lineNumber);
-                            System.out.println(ERROR_DEADLINE + line);
-                            continue;
-                        }
-
-                        String deadlineTime = parts[3].trim();
-                        if (!isValidTimeFormat(deadlineTime)) {
-                            hasInvaildTask = true;
-                            System.out.println("Error line: " + lineNumber);
-                            System.out.println(ERROR_DEADLINE + line);
-                            continue;
-                        }
-                        task = new Deadline(description, deadlineTime);
-                        break;
-                    case "E":
-                        if (parts.length != EVENT_ELEMENT_NUM) {
-                            hasInvaildTask = true;
-                            System.out.println("Error line: " + lineNumber);
-                            System.out.println(ERROR_EVENT + line);
-                            continue;
-                        }
-
-                        String fromTime = parts[3].trim();
-                        String toTime = parts[4].trim();
-                        if (!isValidTimeFormat(fromTime) || !isValidTimeFormat(toTime)) {
-                            hasInvaildTask = true;
-                            System.out.println("Error line: " + lineNumber);
-                            System.out.println(ERROR_EVENT + line);
-                            continue;
-                        }
-                        task = new Event(description, fromTime, toTime);
-                        break;
-                    default:
-                        System.out.println(ERROR_UNKNOWN + line);
-                        continue;
-                }
-
-                if (isDone) {
-                    task.markAsDone();
-                }
-                tasks.add(task);
             }
             scanner.close();
         } catch (IOException e) {
             System.out.println("Error loading tasks: " + e.getMessage());
         }
         return tasks;
+    }
+
+    private static Task parseTaskFromLine(String line, int lineNumber) {
+        String[] parts = line.split(" \\| ");
+
+        if (parts.length < TODO_ELEMENT_NUM) {
+            hasInvaildTask = printErrorMessage(ERROR_UNKNOWN, line, lineNumber);
+            return null;
+        }
+
+        String type = parts[0].trim();
+        boolean isDone = parts[1].trim().equals("1");
+        String description = parts[2].trim();
+
+        Task task = null;
+        switch (type) {
+            case "T":
+                task = loadTodo(parts, description, line, lineNumber);
+                break;
+            case "D":
+                task = loadDeadline(parts, description, line, lineNumber);
+                break;
+            case "E":
+                task = loadEvent(parts, description, line, lineNumber);
+                break;
+            default:
+                hasInvaildTask = printErrorMessage(ERROR_UNKNOWN, line, lineNumber);
+        }
+
+        if (task != null && isDone) {
+            task.markAsDone();
+        }
+        return task;
+    }
+
+    private static Task loadTodo(String[] parts, String description, String line, int lineNumber) {
+        if (parts.length != TODO_ELEMENT_NUM) {
+            hasInvaildTask = printErrorMessage(ERROR_TODO, line, lineNumber);
+            return null;
+        }
+        return new Todo(description);
+    }
+
+    private static Task loadDeadline(String[] parts, String description, String line, int lineNumber) {
+        if (parts.length != DEADLINE_ELEMENT_NUM) {
+            hasInvaildTask = printErrorMessage(ERROR_DEADLINE, line, lineNumber);
+            return null;
+        }
+
+        String deadlineTime = parts[3].trim();
+        if (!isValidTimeFormat(deadlineTime)) {
+            hasInvaildTask = printErrorMessage(ERROR_DEADLINE, line, lineNumber);
+            return null;
+        }
+
+        return new Deadline(description, deadlineTime);
+    }
+
+    private static Task loadEvent(String[] parts, String description, String line, int lineNumber) {
+        if (parts.length != EVENT_ELEMENT_NUM) {
+            hasInvaildTask = printErrorMessage(ERROR_EVENT, line, lineNumber);
+            return null;
+        }
+
+        String fromTime = parts[3].trim();
+        String toTime = parts[4].trim();
+        if (!isValidTimeFormat(fromTime) || !isValidTimeFormat(toTime)) {
+            hasInvaildTask = printErrorMessage(ERROR_EVENT, line, lineNumber);
+            return null;
+        }
+
+        return new Event(description, fromTime, toTime);
+    }
+
+    private static boolean printErrorMessage(String error, String line, int lineNumber) {
+        System.out.println("Error line: " + lineNumber);
+        System.out.println(error + line);
+        return true;
     }
 
     private static boolean isValidTimeFormat(String timeString) {

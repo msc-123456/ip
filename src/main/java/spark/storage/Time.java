@@ -13,6 +13,11 @@ public class Time {
     private boolean isValid;
     private String errorMessage;
 
+    private static final String INVALID_TIME = "Invalid date/time format: ";
+    private static final String EXPECTED_FORMAT = "Expected formats:\n" +
+            "    yyyy-MM-dd HHmm (e.g., 2025-01-01 0100)\n" +
+            "    yyyy-MM-dd (e.g., 2025-01-01)";
+
     private static final DateTimeFormatter DATETIME_FORMATTER =
             DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm");
     private static final DateTimeFormatter DATE_FORMATTER =
@@ -47,7 +52,7 @@ public class Time {
                 this.isValid = true;
             } catch (DateTimeParseException e2) {
                 this.isValid = false;
-                this.errorMessage = "Invalid date/time format: " + timeString;
+                this.errorMessage = INVALID_TIME + timeString;
             }
         }
     }
@@ -57,9 +62,7 @@ public class Time {
     }
 
     public String getErrorMessage() {
-        return errorMessage + "\n" + "Expected formats:\n" +
-                "    yyyy-MM-dd HHmm (e.g., 2025-01-01 0100)\n" +
-                "    yyyy-MM-dd (e.g., 2025-01-01)";
+        return errorMessage + "\n" + EXPECTED_FORMAT;
     }
 
     public LocalDateTime getDateTime() {

@@ -16,14 +16,15 @@ public class Spark {
     }
 
     private static void showWelcomeMessage() {
+        String logo = "  ███████╗██████╗  █████╗ ██████╗ ██╗  ██╗\n" +
+                      "  ██╔════╝██╔══██╗██╔══██╗██╔══██╗██║ ██╔╝\n" +
+                      "  ███████╗██████╔╝███████║██████╔╝█████╔╝ \n" +
+                      "  ╚════██║██╔═══╝ ██╔══██║██╔══██╗██╔═██╗ \n" +
+                      "  ███████║██║     ██║  ██║██║  ██║██║  ██╗\n" +
+                      "  ╚══════╝╚═╝     ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝\n";
+
         Command.printLine();
-        System.out.println("  ███████╗██████╗  █████╗ ██████╗ ██╗  ██╗");
-        System.out.println("  ██╔════╝██╔══██╗██╔══██╗██╔══██╗██║ ██╔╝");
-        System.out.println("  ███████╗██████╔╝███████║██████╔╝█████╔╝ ");
-        System.out.println("  ╚════██║██╔═══╝ ██╔══██║██╔══██╗██╔═██╗ ");
-        System.out.println("  ███████║██║     ██║  ██║██║  ██║██║  ██╗");
-        System.out.println("  ╚══════╝╚═╝     ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝\n");
-        System.out.println("Hello! I'm Spark!\nCan I help you?");
+        System.out.println(logo + "\n" + "Hello! I'm Spark!\nCan I help you?");
         Command.printLine();
     }
 }
